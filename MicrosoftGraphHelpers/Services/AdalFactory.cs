@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
 
 namespace MicrosoftGraphHelpers.Services
