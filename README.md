@@ -43,6 +43,7 @@ Please keep on mind that this is still work in progress and there are things lik
         {
             _graphFactory = graphFactory;
         }
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var graphClient = _graphFactory.GetClientForUser(HttpContext.User);
@@ -61,3 +62,52 @@ Please keep on mind that this is still work in progress and there are things lik
         }
     }
     ```
+## Authorization Attribute
+Once you have set up the above, you may also make use of the `AzureAdAuthorizationAttribute`. The purpose of this is to make authorization with Azure AD roles and groups more simple.
+
+Thanks to this extension, you can make use of real-time group and role based authorization. Currently, the setup is that either of the requirements has to be met. If you want multiple, like group membership and role, just stack it on top of each other.
+
+For this to work, you also need to add `IHttpContextAccessor` to your services.
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    ...
+    services.AddHttpContextAccessor();
+    ...
+}
+```
+
+```csharp
+public class HomeController : Controller
+{
+    [AzureAdAuthorization(roles: new string[] { AzureAdRoles.CompanyAdministrator }, groups: new string[] { ApplicationGroupIds.AppAdministrators })]
+    public async Task<IActionResult> Index()
+    {
+        var graphClient = _graphFactory.GetClientForUser(HttpContext.User);
+        var users = await graphClient.Users.Request().GetAsync();
+
+        return Json(users);
+    }
+}
+```
+
+## Using with APIs
+In order for this to work, you need to have JwtBearerMiddleware setup correctly (with `SaveTokens = true`) for Azure AD in your project. This method simplifies the on-behalf-of flow token redemption while leveraging the token cache and everything.
+```csharp
+public class HomeController : Controller
+{
+    private readonly MicrosoftGraphFactory _graphFactory;
+    public HomeController(MicrosoftGraphFactory graphFactory)
+    {
+        _graphFactory = graphFactory;
+    }
+    [Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> Index()
+    {
+        var graphClient = _graphFactory.GetClientForApiUser(HttpContext.GetTokenAsync("access_token"), HttpContext.User);
+        var users = await graphClient.Users.Request().GetAsync();
+
+        return Json(users);
+    }
+}
+```

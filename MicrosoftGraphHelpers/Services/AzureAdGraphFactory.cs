@@ -9,6 +9,8 @@ namespace MicrosoftGraphHelpers.Services
 {
     public class AzureAdGraphFactory
     {
+        public const string Resource = "https://graph.windows.net/";
+
         private readonly AdalFactory _adalFactory;
         private readonly ClientCredential _clientCredential;
         public AzureAdGraphFactory(AdalFactory adalFactory, ClientCredential clientCredential)
@@ -22,12 +24,12 @@ namespace MicrosoftGraphHelpers.Services
             var objectId = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
             var tenantId = user.FindFirst("http://schemas.microsoft.com/identity/claims/tenantid").Value;
 
-            var servicePointUri = new Uri("https://graph.windows.net");
+            var servicePointUri = new Uri(Resource);
             var serviceRoot = new Uri(servicePointUri, tenantId);
 
             return new ActiveDirectoryClient(serviceRoot, async () =>
             {
-                var result = await authenticationContext.AcquireTokenSilentAsync("https://graph.windows.net/", _clientCredential, new UserIdentifier(objectId, UserIdentifierType.UniqueId));
+                var result = await authenticationContext.AcquireTokenSilentAsync(Resource, _clientCredential, new UserIdentifier(objectId, UserIdentifierType.UniqueId));
 
                 return result.AccessToken;
             });
@@ -36,12 +38,11 @@ namespace MicrosoftGraphHelpers.Services
         {
             var authenticationContext = _adalFactory.GetAuthenticationContextForApplication(tenantId);
 
-            var servicePointUri = new Uri("https://graph.windows.net");
-            var serviceRoot = new Uri(servicePointUri, tenantId);
+            var servicePointUri = new Uri($"{Resource}{tenantId}");
 
-            return new ActiveDirectoryClient(serviceRoot, async () =>
+            return new ActiveDirectoryClient(servicePointUri, async () =>
             {
-                var result = await authenticationContext.AcquireTokenAsync("https://graph.windows.net/", _clientCredential);
+                var result = await authenticationContext.AcquireTokenAsync(Resource, _clientCredential);
 
                 return result.AccessToken;
             });

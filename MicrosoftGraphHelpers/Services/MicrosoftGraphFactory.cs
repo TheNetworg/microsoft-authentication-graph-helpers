@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
@@ -10,6 +11,8 @@ namespace MicrosoftGraphHelpers.Services
 {
     public class MicrosoftGraphFactory
     {
+        public const string Resource = "https://graph.microsoft.com";
+
         private readonly AdalFactory _adalFactory;
         private readonly ClientCredential _clientCredential;
         public MicrosoftGraphFactory(AdalFactory adalFactory, ClientCredential clientCredential)
@@ -24,7 +27,7 @@ namespace MicrosoftGraphHelpers.Services
 
             return new GraphServiceClient(new DelegateAuthenticationProvider(async requestMessage =>
             {
-                var result = await authenticationContext.AcquireTokenSilentAsync("https://graph.microsoft.com", _clientCredential, new UserIdentifier(objectId, UserIdentifierType.UniqueId));
+                var result = await authenticationContext.AcquireTokenSilentAsync(Resource, _clientCredential, new UserIdentifier(objectId, UserIdentifierType.UniqueId));
 
                 requestMessage.Headers.Authorization = new AuthenticationHeaderValue(result.AccessTokenType, result.AccessToken);
             }));
@@ -35,7 +38,22 @@ namespace MicrosoftGraphHelpers.Services
 
             return new GraphServiceClient(new DelegateAuthenticationProvider(async requestMessage =>
             {
-                var result = await authenticationContext.AcquireTokenAsync("https://graph.microsoft.com", _clientCredential);
+                var result = await authenticationContext.AcquireTokenAsync(Resource, _clientCredential);
+
+                requestMessage.Headers.Authorization = new AuthenticationHeaderValue(result.AccessTokenType, result.AccessToken);
+            }));
+        }
+        public GraphServiceClient GetClientForApiUser(string accessToken, ClaimsPrincipal user)
+        {
+            string userName = user.FindFirst(ClaimTypes.Upn)?.Value ?? user.FindFirst(ClaimTypes.Email)?.Value;
+            //TODO: Validate whether the token cache works properly or not...
+            UserAssertion userAssertion = new UserAssertion(accessToken);
+            
+            var authenticationContext = _adalFactory.GetAuthenticationContextForUser(user);
+            
+            return new GraphServiceClient(new DelegateAuthenticationProvider(async requestMessage =>
+            {
+                var result = await authenticationContext.AcquireTokenAsync(Resource, _clientCredential, userAssertion);
 
                 requestMessage.Headers.Authorization = new AuthenticationHeaderValue(result.AccessTokenType, result.AccessToken);
             }));
