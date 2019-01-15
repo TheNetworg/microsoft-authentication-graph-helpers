@@ -21,6 +21,7 @@ namespace MicrosoftGraphHelpers.AzureAdAuthorization
             if (!context.User.Identity.IsAuthenticated)
             {
                 context.Fail();
+                return;
             }
 
             var userId = context.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
@@ -40,6 +41,7 @@ namespace MicrosoftGraphHelpers.AzureAdAuthorization
                         if (graphRoleMembers.Where(x => x.Id == userId).Any())
                         {
                             result = true;
+                            break;
                         }
                     }
                 }
