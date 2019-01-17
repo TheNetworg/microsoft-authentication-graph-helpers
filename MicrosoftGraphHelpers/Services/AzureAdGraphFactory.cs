@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.ActiveDirectory.GraphClient;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using MicrosoftGraphHelpers.Common;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace MicrosoftGraphHelpers.Services
 {
-    public class AzureAdGraphFactory
+    public class AzureAdGraphFactory : IAzureADProtectedResourceFactory<ActiveDirectoryClient>
     {
         public const string Resource = "https://graph.windows.net/";
 
@@ -46,6 +47,10 @@ namespace MicrosoftGraphHelpers.Services
 
                 return result.AccessToken;
             });
+        }
+        public ActiveDirectoryClient GetClientForApiUser(string accessToken, ClaimsPrincipal user)
+        {
+            throw new NotImplementedException();
         }
     }
 }

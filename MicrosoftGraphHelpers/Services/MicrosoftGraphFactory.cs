@@ -1,5 +1,6 @@
 ﻿using Microsoft.Graph;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using MicrosoftGraphHelpers.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Text;
 
 namespace MicrosoftGraphHelpers.Services
 {
-    public class MicrosoftGraphFactory
+    public class MicrosoftGraphFactory : IAzureADProtectedResourceFactory<GraphServiceClient>
     {
         public const string Resource = "https://graph.microsoft.com";
 
