@@ -19,7 +19,8 @@ namespace MicrosoftGraphHelpers.Services
         public AuthenticationContext GetAuthenticationContextForUser(ClaimsPrincipal user)
         {
             var tokenCache = _tokenCacheFactory.CreateForUser(user);
-            return new AuthenticationContext(_authority, tokenCache);
+            var tenantId = user.FindFirstValue("http://schemas.microsoft.com/identity/claims/tenantid");
+            return new AuthenticationContext(_authority.Replace("common", tenantId), tokenCache);
         }
         public AuthenticationContext GetAuthenticationContextForApplication(string tenantId)
         {
