@@ -1,5 +1,6 @@
 # Microsoft Graph Helpers
-> Warning, this is just a proof of concept!
+
+> Follow: https://github.com/AzureAD/microsoft-identity-web for better and supported approach based on MSAL.
 
 The purpose of this library is to simplify the interaction with Microsoft's authentication libraries and calling 1st party and other APIs.
 
